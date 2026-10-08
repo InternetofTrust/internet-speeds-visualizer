@@ -517,14 +517,17 @@
 
   // Payload = 1 MB.  time = (1 * 8) / Mbps   (seconds for one book)
   // visualMs is deliberately longer than real time so the motion is visible.
+  // Real time (seconds) for 1 MB book = 8 / Mbps
+  // Visual is tuned so books *arrive* at roughly the real books-per-second rate
+  // while still remaining visible on screen.
   const PROFILES = {
-    dialup:   { bw: "56 Kbps",  lcd: "56K",  time: 142.86, kTime: "39.7 hrs", lanes: 1,  booksPerPacket: 1, spawnMs: 0,   visualMs: 52000, maxConcurrent: 2  },
-    dsl:      { bw: "5 Mbps",   lcd: "DSL",  time: 1.60,   kTime: "26.7 mins",lanes: 2,  booksPerPacket: 1, spawnMs: 280, visualMs: 1800,  maxConcurrent: 14 },
-    cable20:  { bw: "20 Mbps",  lcd: "HS",   time: 0.40,   kTime: "6.7 mins", lanes: 3,  booksPerPacket: 2, spawnMs: 160, visualMs: 1100,  maxConcurrent: 28 },
-    cable100: { bw: "100 Mbps", lcd: "HS",   time: 0.08,   kTime: "1.3 mins", lanes: 5,  booksPerPacket: 3, spawnMs: 80,  visualMs: 700,   maxConcurrent: 45 },
-    fiber500: { bw: "500 Mbps", lcd: "FTTH", time: 0.016,  kTime: "16 s",     lanes: 8,  booksPerPacket: 5, spawnMs: 48,  visualMs: 480,   maxConcurrent: 70 },
-    fiber1000:{ bw: "1 Gbps",   lcd: "FTTH", time: 0.008,  kTime: "8 s",      lanes: 10, booksPerPacket: 8, spawnMs: 35,  visualMs: 380,   maxConcurrent: 90 },
-    fiber10g: { bw: "10 Gbps",  lcd: "10G",  time: 0.0008, kTime: "0.8 s",    lanes: 12, booksPerPacket:12, spawnMs: 24,  visualMs: 280,   maxConcurrent: 110}
+    dialup:   { bw: "56 Kbps",  lcd: "56K",  time: 142.86, kTime: "39.7 hrs",  lanes: 1,  booksPerPacket: 1, spawnMs: 0,    visualMs: 45000, maxConcurrent: 2  },
+    dsl:      { bw: "5 Mbps",   lcd: "DSL",  time: 1.60,   kTime: "26.7 mins", lanes: 2,  booksPerPacket: 1, spawnMs: 1600, visualMs: 2200,  maxConcurrent: 6  },
+    cable20:  { bw: "20 Mbps",  lcd: "HS",   time: 0.40,   kTime: "6.7 mins",  lanes: 3,  booksPerPacket: 1, spawnMs: 400,  visualMs: 1400,  maxConcurrent: 12 },
+    cable100: { bw: "100 Mbps", lcd: "HS",   time: 0.08,   kTime: "1.3 mins",  lanes: 4,  booksPerPacket: 2, spawnMs: 160,  visualMs: 900,   maxConcurrent: 24 },
+    fiber500: { bw: "500 Mbps", lcd: "FTTH", time: 0.016,  kTime: "16 s",      lanes: 6,  booksPerPacket: 3, spawnMs: 50,   visualMs: 550,   maxConcurrent: 40 },
+    fiber1000:{ bw: "1 Gbps",   lcd: "FTTH", time: 0.008,  kTime: "8 s",       lanes: 8,  booksPerPacket: 4, spawnMs: 32,   visualMs: 420,   maxConcurrent: 55 },
+    fiber10g: { bw: "10 Gbps",  lcd: "10G",  time: 0.0008, kTime: "0.8 s",     lanes: 10, booksPerPacket: 6, spawnMs: 18,   visualMs: 300,   maxConcurrent: 80 }
   };
 
   const stage     = document.getElementById('stage');
@@ -746,11 +749,12 @@
       tooltip.textContent = `${pct}%  •  ${elapsed}s / ${p.time.toFixed(0)}s`;
       tooltip.classList.add('show');
     } else if (running) {
-      // Throttle tooltip updates at high speeds so the number stays readable
-      if (!tick.transitFrame) tick.transitFrame = 0;
-      tick.transitFrame++;
-      const updateEvery = profileSel.value.startsWith('fiber') ? 8 : 3;
-      if (tick.transitFrame % updateEvery === 0) {
+      // Time-based throttle so the number stays readable for humans
+      const now = performance.now();
+      if (!tick.lastTransitUpdate) tick.lastTransitUpdate = 0;
+      const interval = profileSel.value.startsWith('fiber') ? 450 : 250; // ms
+      if (now - tick.lastTransitUpdate >= interval) {
+        tick.lastTransitUpdate = now;
         const totalBooksInTransit = books.reduce((sum, b) => sum + (b.absorbing ? 0 : b.books), 0);
         tooltip.textContent = `Downloading • ${totalBooksInTransit} books in transit`;
       }
