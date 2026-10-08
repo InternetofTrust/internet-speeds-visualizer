@@ -517,17 +517,17 @@
 
   // Payload = 1 MB.  time = (1 * 8) / Mbps   (seconds for one book)
   // visualMs is deliberately longer than real time so the motion is visible.
-  // Real time (seconds) for 1 MB book = 8 / Mbps
-  // Visual is tuned so books *arrive* at roughly the real books-per-second rate
-  // while still remaining visible on screen.
+    // Real time (seconds) for 1 MB book = 8 / Mbps
+  // Effective visual rate ≈ (lanes * booksPerPacket * 1000) / spawnMs
+  // Tuned so arrival rate ≈ real books-per-second (approximate is fine)
   const PROFILES = {
     dialup:   { bw: "56 Kbps",  lcd: "56K",  time: 142.86, kTime: "39.7 hrs",  lanes: 1,  booksPerPacket: 1, spawnMs: 0,    visualMs: 45000, maxConcurrent: 2  },
-    dsl:      { bw: "5 Mbps",   lcd: "DSL",  time: 1.60,   kTime: "26.7 mins", lanes: 2,  booksPerPacket: 1, spawnMs: 1600, visualMs: 2200,  maxConcurrent: 6  },
-    cable20:  { bw: "20 Mbps",  lcd: "HS",   time: 0.40,   kTime: "6.7 mins",  lanes: 3,  booksPerPacket: 1, spawnMs: 400,  visualMs: 1400,  maxConcurrent: 12 },
-    cable100: { bw: "100 Mbps", lcd: "HS",   time: 0.08,   kTime: "1.3 mins",  lanes: 4,  booksPerPacket: 2, spawnMs: 160,  visualMs: 900,   maxConcurrent: 24 },
-    fiber500: { bw: "500 Mbps", lcd: "FTTH", time: 0.016,  kTime: "16 s",      lanes: 6,  booksPerPacket: 3, spawnMs: 50,   visualMs: 550,   maxConcurrent: 40 },
-    fiber1000:{ bw: "1 Gbps",   lcd: "FTTH", time: 0.008,  kTime: "8 s",       lanes: 8,  booksPerPacket: 4, spawnMs: 32,   visualMs: 420,   maxConcurrent: 55 },
-    fiber10g: { bw: "10 Gbps",  lcd: "10G",  time: 0.0008, kTime: "0.8 s",     lanes: 10, booksPerPacket: 6, spawnMs: 18,   visualMs: 300,   maxConcurrent: 80 }
+    dsl:      { bw: "5 Mbps",   lcd: "DSL",  time: 1.60,   kTime: "26.7 mins", lanes: 1,  booksPerPacket: 1, spawnMs: 1600, visualMs: 2200,  maxConcurrent: 4  },
+    cable20:  { bw: "20 Mbps",  lcd: "HS",   time: 0.40,   kTime: "6.7 mins",  lanes: 2,  booksPerPacket: 1, spawnMs: 800,  visualMs: 1400,  maxConcurrent: 10 },
+    cable100: { bw: "100 Mbps", lcd: "HS",   time: 0.08,   kTime: "1.3 mins",  lanes: 3,  booksPerPacket: 2, spawnMs: 480,  visualMs: 900,   maxConcurrent: 22 },
+    fiber500: { bw: "500 Mbps", lcd: "FTTH", time: 0.016,  kTime: "16 s",      lanes: 5,  booksPerPacket: 3, spawnMs: 240,  visualMs: 550,   maxConcurrent: 40 },
+    fiber1000:{ bw: "1 Gbps",   lcd: "FTTH", time: 0.008,  kTime: "8 s",       lanes: 6,  booksPerPacket: 4, spawnMs: 192,  visualMs: 420,   maxConcurrent: 55 },
+    fiber10g: { bw: "10 Gbps",  lcd: "10G",  time: 0.0008, kTime: "0.8 s",     lanes: 8,  booksPerPacket: 6, spawnMs: 120,  visualMs: 300,   maxConcurrent: 80 }
   };
 
   const stage     = document.getElementById('stage');
